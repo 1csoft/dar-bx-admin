@@ -75,6 +75,8 @@ class ListBuilder implements IBuilderLIst
 
 		$this->CAdminSorting = new \CAdminSorting($this->nameInitTable, 'ID', 'DESC');
 
+		$this->sortItems();
+
 		if ($this->resource->versionGrid == 2){
 			$this->CAdminList = new \CAdminUiList($this->nameInitTable, $this->CAdminSorting);
 		} else {
@@ -105,6 +107,7 @@ class ListBuilder implements IBuilderLIst
 					};
 			}
 		}
+
 
 		$this->CAdminList->AddGroupActionTable($actions);
 
@@ -164,6 +167,8 @@ class ListBuilder implements IBuilderLIst
 		$this->query->countTotal(true);
 
 		$this->query->setLimit($nav->getPageSize());
+
+		$this->query->addOrder($this->CAdminSorting->getField(),$this->CAdminSorting->getOrder());
 
 		$obItems = $this->query->exec();
 		$nav->setRecordCount($obItems->getCount());
@@ -345,6 +350,18 @@ class ListBuilder implements IBuilderLIst
 		$dataClass = $this->resource->getModel()->getDataClass();
 		foreach ($arIds as $id) {
 			$dataClass::delete($id);
+		}
+	}
+
+	/**
+	 * @method sortItems
+	 */
+	protected function sortItems()
+	{
+		if($this->request->query->get('grid_action') == 'sort'){
+			if(method_exists($this->resource, 'sortItems')){
+				$this->resource->sortItems($this->request, $this->CAdminSorting);
+			}
 		}
 	}
 }

@@ -11,7 +11,7 @@ use Bitrix\Main;
 use Dar\Admin\Builder\ListBuilder;
 use Dar\Admin\Builder\Tabs;
 use Dar\Admin\Fields\BaseField;
-use Illuminate\Translation\ArrayLoader;
+use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -55,6 +55,9 @@ class BasePage implements IResource
 	/** @var Request */
 	protected $request;
 
+	protected $locale = 'ru';
+	protected $langPath = __DIR__.'/Resources/lang';
+
 	const TYPE_SIMPLE = 'SIMPLE';
 	const TYPE_LIST = 'LIST';
 	const TYPE_EDIT = 'EDIT';
@@ -64,6 +67,8 @@ class BasePage implements IResource
 		$this->container = AdminContainer::getInstance();
 		$this->typeEntity = static::TYPE_SIMPLE;
 		$this->request = AdminContainer::getRequest();
+
+		$this->setLangMessages()->loadResourceMessage();
 	}
 
 	/**
@@ -82,7 +87,8 @@ class BasePage implements IResource
 
 	public function getTitle(): string
 	{
-		return 'Админская страница';
+
+		return $this->Translator->trans('main.title_page');
 	}
 
 	public function getTabs()
@@ -90,7 +96,7 @@ class BasePage implements IResource
 		$name = array_pop(explode('\\', static::$model));
 
 		return [
-			Tabs::create('edit_'.$name)->name('Редактировать элемент')->setFields($this->fields()),
+			Tabs::create('edit_'.$name)->name($this->trans('main.tabs.edit'))->setFields($this->fields()),
 		];
 	}
 
@@ -119,13 +125,6 @@ class BasePage implements IResource
 				$this->fields[$item->getName()] = $item;
 				$this->fieldMap[$item->getName()] = $k;
 			}
-			/*foreach ($fields as $item) {
-				$k = 'admin::fields.list_'.$item->getName();
-				$msg = $this->loadResourceMessage()->trans($k);
-				if ($item->getLabel() === $item->getName() && $k !== $msg){
-					$item->label($msg);
-				}
-			}*/
 		}
 
 		return new FieldsCollection($this->fields);
@@ -192,9 +191,9 @@ class BasePage implements IResource
 	public function contextEditMenu()
 	{
 		$menu[] = array(
-			"TEXT" => 'Список элементов',
+			"TEXT" => $this->trans('main.context.list'),
 			"LINK" => $this->listLink(),
-			"TITLE" => 'Список элементов',
+			"TITLE" => $this->trans('main.context.list'),
 			"ICON" => "btn_list",
 		);
 
@@ -203,15 +202,15 @@ class BasePage implements IResource
 		$id = $request->query->get('ID') ? : $request->query->get('id') ? : 0;
 		if ((int)$id > 0){
 			$menu[] = [
-				"TEXT" => 'Добавить новый элемент',
-				"TITLE" => 'Добавить новый элемент',
+				"TEXT" => $this->trans('main.context.new'),
+				"TITLE" => $this->trans('main.context.new'),
 				"LINK" => $this->editLink().'&ID=0',
 				"ICON" => "btn_new",
 			];
 			$menu[] = array(
-				"TEXT" => 'Удалить',
-				"TITLE" => 'Удалить',
-				"LINK" => "javascript:if(confirm('Это правда надо удалять?')) ".
+				"TEXT" => $this->trans('main.actions.del'),
+				"TITLE" => $this->trans('main.actions.del'),
+				"LINK" => "javascript:if(confirm(".$this->trans('main.actions.confirm_del').")) ".
 					"window.location='rubric_admin.php?ID=".$id."&action=delete⟨=".LANG."&".bitrix_sessid_get()."';",
 				"ICON" => "btn_delete",
 			);
@@ -234,9 +233,9 @@ class BasePage implements IResource
 	{
 		return [
 			array(
-				"TEXT" => 'Добавить элемент',
+				"TEXT" => $this->trans('main.context.new'),
 				"LINK" => $this->editLink(),
-				"TITLE" => 'Добавить элемент',
+				"TITLE" => $this->trans('main.context.new'),
 				"ICON" => "btn_new",
 			),
 		];
@@ -252,17 +251,20 @@ class BasePage implements IResource
 	}
 
 	/**
-	 * @param array $langMessages
-	 *
+	 * @method setLangMessages
 	 * @return BasePage
 	 */
-	public function setLangMessages($langMessages = []): BasePage
+	public function setLangMessages(): BasePage
 	{
-		$this->langMessages = $langMessages;
+		$root = Main\Application::getDocumentRoot();
+		$FileSystem = new \Illuminate\Filesystem\Filesystem();
+		$langMain = $root.'/local/dar/admin/lang';
+		if (!$FileSystem->exists($langMain)){
+			$langMain = $this->langPath;
+		}
 
-		$ArrayLoader = new ArrayLoader();
-		$ArrayLoader->addMessages('ru', 'fields', $langMessages, 'admin');
-		$this->Translator = new Translator($ArrayLoader, 'ru');
+		$FileLoader = new FileLoader($FileSystem, $langMain);
+		$this->Translator = new Translator($FileLoader, 'ru');
 
 		return $this;
 	}
@@ -278,11 +280,14 @@ class BasePage implements IResource
 
 	/**
 	 * @method loadResourceMessage
+	 * @param string $group
+	 * @param string $namespace
+	 *
 	 * @return Translator
 	 */
-	public function loadResourceMessage()
+	public function loadResourceMessage($group = 'main', $namespace = '*')
 	{
-		$this->Translator->load('admin', 'fields', 'ru');
+		$this->Translator->load($namespace, $group, $this->locale);
 
 		return $this->Translator;
 	}
@@ -364,7 +369,7 @@ class BasePage implements IResource
 			array(
 				"ICON" => "edit",
 				"DEFAULT" => true,
-				"TEXT" => 'Изменить',
+				"TEXT" => $this->trans('main.actions.edit'),
 				"ACTION" => $lAdmin->ActionRedirect($uri->getUri()),
 			),
 		];
@@ -373,7 +378,7 @@ class BasePage implements IResource
 
 		$actions[] = [
 			"ICON" => "delete",
-			"TEXT" => 'Удалить',
+			"TEXT" => $this->trans('main.actions.del'),
 //			"ACTION"=>"if(confirm('Это правда надо грохнуть?')) ".$lAdmin->actionDoGroup($data['ID'], "delete")
 			"ACTION" => $lAdmin->actionDoGroup($data['ID'], "delete"),
 		];
@@ -439,4 +444,11 @@ class BasePage implements IResource
 	public function beforeExecList(ListBuilder $adminList = null)
 	{
 	}
+
+	public function trans($key)
+	{
+		return $this->getTranslator()->trans($key);
+	}
+
+//	public function sortItems(Request $request, \CAdminSorting $adminSorting){}
 }
