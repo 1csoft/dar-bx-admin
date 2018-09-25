@@ -31,4 +31,17 @@ class FieldsCollection extends Collection
 
 		return value($default);
 	}
+
+	/**
+	 * @method add
+	 * @param BaseField $field
+	 *
+	 * @return $this
+	 */
+	public function add(BaseField $field)
+	{
+		$this->items[$field->getName()] = $field;
+
+		return $this;
+	}
 }

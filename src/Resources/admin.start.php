@@ -7,12 +7,6 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 
-//dump(
-//	\CFile::FormatSize(123731968),
-//	\CFile::FormatSize(20480)
-//);
-
-
 try{
 	$AdminProvider = \Dar\Admin\AdminProvider::register();
 	$AdminProvider->initPage();
