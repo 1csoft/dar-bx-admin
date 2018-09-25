@@ -1,0 +1,25 @@
+{
+    "name": "dar/bx-admin",
+    "description": "bitrix admin constructor",
+    "type": "library",
+    "require": {
+        "symfony/dependency-injection": "^4.1",
+        "monolog/monolog": "^1.23",
+        "illuminate/container": "^5.7",
+        "symfony/finder": "^4.1",
+        "arrilot/bitrix-blade": "^0.6.5",
+        "illuminate/validation": "^5.7",
+        "symfony/var-dumper": "^4.1",
+        "symfony/options-resolver": "^4",
+        "symfony/yaml": "^4",
+        "symfony/console": "^4",
+        "symfony/serializer": "^4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "dres",
+            "email": "dres@1c.ru"
+        }
+    ]
+}
