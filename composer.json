@@ -21,5 +21,10 @@
             "name": "dres",
             "email": "dres@1c.ru"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dar\\Admin\\": "src"
+        }
+    }
 }
