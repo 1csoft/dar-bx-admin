@@ -1,0 +1,12 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    <select name="{{ name }}" class="{{ styleClass }}">
+        {% for option in items %}
+            {% if option.value == value %}
+                <option value="{{ option.value }}" selected >{{ option.label }}</option>
+            {% else %}
+                <option value="{{ option.value }}">{{ option.label }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+{% endblock %}

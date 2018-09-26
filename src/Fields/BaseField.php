@@ -8,6 +8,8 @@
 namespace Dar\Admin\Fields;
 
 
+use Bitrix\Main\Application;
+use Bitrix\Main\Text\Encoding;
 use Dar\Admin\AdminContainer;
 use Dar\Admin\AdminProvider;
 use Illuminate\View\Factory;
@@ -34,7 +36,8 @@ abstract class BaseField
 	/** @var mixed */
 	protected $value;
 
-	protected $instance;
+	/** @var BaseField */
+	protected static $instance = null;
 
 	protected $sortable;
 
@@ -61,6 +64,8 @@ abstract class BaseField
 
 	/** @var array  */
 	protected $options = [];
+
+	protected $tab;
 
 	protected function __construct($name = null)
 	{
@@ -149,6 +154,7 @@ abstract class BaseField
 	 */
 	public function label(string $label): BaseField
 	{
+//		$label = Encoding::convertEncoding($label, 'cp1251', 'utf-8');
 		$this->label = $label;
 
 		return $this;
@@ -197,25 +203,29 @@ abstract class BaseField
 	}
 
 	/**
-	 * @method getInstance - get param instance
-	 * @return mixed
-	 */
-	public function getInstance()
-	{
-		return $this->instance;
-	}
-
-	/**
-	 * @param mixed $instance
+	 * @method getInstance
+	 * @param $name
 	 *
 	 * @return BaseField
 	 */
-	public function instance($instance)
+	public static function getInstance($name): BaseField
 	{
-		$this->instance = $instance;
+		if(is_null(self::$instance)){
+			self::$instance = new static($name);
+		}
 
-		return $this;
+		return self::$instance;
 	}
+
+	/**
+	 * @method setInstance - set param Instance
+	 * @param BaseField $instance
+	 */
+	public static function setInstance(BaseField $instance)
+	{
+		self::$instance = $instance;
+	}
+
 
 	/**
 	 * @method template
@@ -239,10 +249,19 @@ abstract class BaseField
 	 */
 	public function render($tpl = '', $params = [])
 	{
+		if(strlen($tpl) == 0){
+			$tpl = $this->tpl;
+		}
 		if (strlen($tpl) > 0){
-			/** @var Factory $view */
 			$view = AdminContainer::getInstance()->get('admin.view');
-			$tpl = __DIR__.'/../Resources/view/'.$tpl;
+			if(AdminContainer::getInstance()->getOption('templateSystem') == 'twig'){
+				$tpl .= '.twig';
+//				$tpl = __DIR__.'/../Resources/twig/'.$tpl;
+			} else {
+				$tpl .= '.blade.php';
+				$tpl = __DIR__.'/../Resources/blade/'.$tpl;
+			}
+
 			$context = ['item' => $this];
 			if(!is_array($params))
 				$params = [];
@@ -251,9 +270,17 @@ abstract class BaseField
 			$context['name'] = $this->getName();
 			$context['class'] = $this->getClass();
 			$context['options'] = $this->getOptions();
+			$context['label'] = $this->getLabel();
 
 			$context += $params;
-			return $view->file($tpl, $context)->render();
+
+			$this->onBeforeRenderField();
+
+			if(AdminContainer::getInstance()->getOption('templateSystem') == 'twig'){
+				return $view->render($tpl, $context);
+			} else {
+				return $view->file($tpl, $context)->render();
+			}
 		}
 
 		return '';
@@ -375,7 +402,7 @@ abstract class BaseField
 	 */
 	public function onBeforeRenderField()
 	{
-		\CJSCore::Init(['jquery', 'lodash', 'admin_fields']);
+//		\CJSCore::Init(['jquery', 'lodash', 'admin_fields']);
 	}
 
 	/**
@@ -444,5 +471,19 @@ abstract class BaseField
 	public function isDisabled()
 	{
 		return $this->disabled;
+	}
+
+	public function convertEncodingToCurrent($str = '')
+	{
+		if(mb_detect_encoding($str) == 'UTF-8' && !Application::isUtfMode()){
+			$str = Encoding::convertEncoding($str, 'UTF-8', 'WINDOWS-1251');
+//			$str = iconv('UTF-8', 'WINDOWS-1251', $str);
+		}
+		return $str;
+	}
+
+	public function tab($tabName = '')
+	{
+		$this->tab = $tabName;
 	}
 }

@@ -12,7 +12,7 @@ class Number extends BaseField
 {
 	public function render($tpl = '')
 	{
-		// TODO: Implement render() method.
+		return parent::render('fields/number');
 	}
 
 }

@@ -58,6 +58,8 @@ class BasePage implements IResource
 	protected $locale = 'ru';
 	protected $langPath = __DIR__.'/Resources/lang';
 
+	protected $namePage = '';
+
 	const TYPE_SIMPLE = 'SIMPLE';
 	const TYPE_LIST = 'LIST';
 	const TYPE_EDIT = 'EDIT';
@@ -87,7 +89,6 @@ class BasePage implements IResource
 
 	public function getTitle(): string
 	{
-
 		return $this->Translator->trans('main.title_page');
 	}
 
@@ -448,6 +449,36 @@ class BasePage implements IResource
 	public function trans($key)
 	{
 		return $this->getTranslator()->trans($key);
+	}
+
+	public function btnForm()
+	{
+		return array(
+			"disabled" => false,
+			"btnSave" => true,
+			"btnCancel" => true,
+			"btnSaveAndAdd" => true,
+			'back_url' => $this->getUrl('list')
+		);
+	}
+
+	/**
+	 * @method getNamePage - get param namePage
+	 * @return string
+	 */
+	public function getNamePage()
+	{
+		return $this->namePage;
+	}
+
+	/**
+	 * @method setNamePage - set param NamePage
+	 * @param string $namePage
+	 */
+	public function setNamePage($namePage)
+	{
+		$namePage = str_replace('.', '_', $namePage);
+		$this->namePage = $namePage;
 	}
 
 //	public function sortItems(Request $request, \CAdminSorting $adminSorting){}

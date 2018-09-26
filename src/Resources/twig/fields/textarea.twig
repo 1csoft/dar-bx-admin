@@ -1,0 +1,4 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    <textarea name="{{ name }}" class="{{ styleClass }}" cols="{{ options.cols }}" rows="{{ options.rows }}">{{ value }}</textarea>
+{% endblock %}

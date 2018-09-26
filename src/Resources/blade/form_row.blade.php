@@ -7,5 +7,10 @@
             {{ $item->getLabel() }}:
         @endif
     </td>
-    <td width="70%">@yield('form_field')</td>
+    <td width="70%">
+        @yield('form_field')
+        @php
+        //var_dump($item->getLabel());
+        @endphp
+    </td>
 </tr>

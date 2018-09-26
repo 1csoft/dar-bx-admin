@@ -201,5 +201,12 @@ class AdminProvider
 		return $this->container;
 	}
 
-
+	/**
+	 * @method getCurrentResource
+	 * @return BasePage
+	 */
+	public function getCurrentResource()
+	{
+		return $this->resource;
+	}
 }

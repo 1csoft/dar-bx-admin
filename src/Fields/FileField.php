@@ -20,9 +20,17 @@ class FileField extends BaseField
 	 */
 	public function render($tpl = '', $params = [])
 	{
-
-		return parent::render('fields/file.blade.php');
-
+		return \Bitrix\Main\UI\FileInput::createInstance(array(
+			"name" => $this->getName(),
+			"description" => true,
+			"upload" => true,
+			"allowUpload" => "I",
+			"medialib" => true,
+			"fileDialog" => true,
+			"cloud" => true,
+			"delete" => true,
+			"maxCount" => 1
+		))->show();
 	}
 
 

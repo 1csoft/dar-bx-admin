@@ -12,8 +12,8 @@ class Input extends BaseField
 {
 	protected $type = 'text';
 
-	public function render($tpl = '')
+	public function render()
 	{
-		return parent::render('fields/input.blade.php');
+		return parent::render('fields/input');
 	}
 }

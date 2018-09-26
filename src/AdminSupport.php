@@ -176,6 +176,8 @@ class AdminSupport
 			]
 		]);
 		\CJSCore::RegisterExt('lodash', ['js' => static::getLocalPath($jsPath.'/lodash.min.js')]);
+		\CJSCore::RegisterExt('jquery3', ['js' => 'https://code.jquery.com/jquery-3.3.1.min.js']);
+		\CUtil::InitJSCore(['jquery3', 'lodash', 'admin_fields']);
 	}
 
 	/**
@@ -187,7 +189,11 @@ class AdminSupport
 	public static function getLocalPath(string $path)
 	{
 		$root = Main\Application::getDocumentRoot();
+		if(AdminContainer::getOption('root')){
+			$root = AdminContainer::getOption('root');
+		}
 
 		return str_replace($root, '', $path);
 	}
+
 }

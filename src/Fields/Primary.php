@@ -14,10 +14,11 @@ class Primary extends BaseField
 	public function render($tpl = '', $params = [])
 	{
 		$val = AdminContainer::getRequest()->get($this->getName());
+
 		if(!empty($val))
 			$this->value($val);
 
-		return parent::render('fields/primary.blade.php');
+		return parent::render('fields/primary');
 	}
 
 

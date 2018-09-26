@@ -102,9 +102,13 @@ class Resource
 
 		AdminProvider::register()->setResourceName($name);
 
-		$this->container->bind($name, function ($container) use ($class){
+		$this->container->bind($name, function ($container) use ($class, $name){
 			/** @var BasePage $instance */
 			$instance = new $class($container);
+//			$name = str_replace('.', '_', $name);
+
+			$instance->setNamePage($name);
+
 			return $instance;
 		});
 

@@ -39,7 +39,7 @@ class Select extends BaseField
 		$this->multi = $flag;
 	}
 
-	public function render($tpl = 'fields/select.blade.php')
+	public function render($tpl = 'fields/select')
 	{
 		return parent::render($tpl, ['name' => $this->getName(), 'items' => $this->getItems()]);
 	}
@@ -48,4 +48,17 @@ class Select extends BaseField
 	{
 		return $this->items;
 	}
+
+	/**
+	 * @method create
+	 * @param $name
+	 *
+	 * @return Select
+	 */
+	public static function create($name): Select
+	{
+		return parent::create($name);
+	}
+
+
 }

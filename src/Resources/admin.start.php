@@ -25,7 +25,6 @@ if ($isPopup){
 if(BX_ADMIN_SECTION_404 !== 'Y'){
 	$AdminProvider->createPage()->render();
 }
-
 if ($isPopup){
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");
 } else {

@@ -44,4 +44,19 @@ class FieldsCollection extends Collection
 
 		return $this;
 	}
+
+	/**
+	 * @method delete
+	 * @param array|string $item
+	 */
+	public function delete($item)
+	{
+		if(is_array($item)){
+			foreach ($item as $value) {
+				$this->offsetUnset($value);
+			}
+		} else {
+			$this->offsetUnset($item);
+		}
+	}
 }

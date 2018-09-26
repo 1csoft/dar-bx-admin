@@ -1,0 +1,5 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}" />
+    <p class="{{ styleClass }}">{{ value }}</p>
+{% endblock %}

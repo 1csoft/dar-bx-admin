@@ -17,7 +17,7 @@ class Textarea extends BaseField
 
 	public function render()
 	{
-		return parent::render('fields/textarea.blade.php');
+		return parent::render('fields/textarea');
 	}
 
 }

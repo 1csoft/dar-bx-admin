@@ -158,9 +158,9 @@ class Tabs
 	public function setFields($fields = [])
 	{
 		foreach ($fields as $code => $field) {
-			if(!$field->getHideOnCreate()){
+//			if(!$field->getHideOnCreate()){
 				$this->fields[$code] = $field;
-			}
+//			}
 		}
 
 		return $this;
