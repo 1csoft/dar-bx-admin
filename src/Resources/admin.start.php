@@ -7,9 +7,14 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 
+use  Dar\Admin\AdminProvider;
+use Dar\Admin\Exceptions;
+use Dar\Admin\Resource;
+use Dar\Admin\Configuration;
+
 try{
 	$AdminProvider = \Dar\Admin\AdminProvider::register();
-	$AdminProvider->initPage();
+	$AdminProvider->initCurrentResource()->initPage();
 } catch (\Dar\Admin\Exceptions\NotFoundResource $err){
 	include $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/admin/404.php';
 }

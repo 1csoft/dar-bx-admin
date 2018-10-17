@@ -19,7 +19,7 @@ class AdminContainer extends \Illuminate\Container\Container
 
 	/** @var array  */
 	protected $options = [
-		'templateSystem' => 'twig',
+		'templateSystem' => 'admin.twig',
 		'jsPath' => __DIR__.'/Resources/js',
 		'cssPath' => __DIR__.'/Resources/css',
 		'root' => false
@@ -34,29 +34,11 @@ class AdminContainer extends \Illuminate\Container\Container
 		$this->instance('global.uf', $USER_FIELD_MANAGER);
 		$this->instance('admin.resources', Resource::getInstance());
 
-		BladeProvider::register(__DIR__.'/Resources/blade');
-		$this->instance('admin.blade', BladeProvider::getViewFactory());
+//		BladeProvider::register(__DIR__.'/Resources/blade');
+//		$this->instance('admin.blade', BladeProvider::getViewFactory());
 
-
-		$this->singleton('admin.twig', function (){
-			$twigLoader = $loader = new \Twig\Loader\FilesystemLoader(__DIR__.'/Resources/twig');
-			$twig = new \Twig\Environment($twigLoader, [
-				'cache' => $_SERVER['DOCUMENT_ROOT'].'/bitrix/cache/twig_templates',
-				'charset' => Application::isUtfMode() ? 'utf-8' : 'cp1251',
-				'auto_reload' => true,
-				'debug' => true,
-			]);
-			$twig->addExtension(new \Twig\Extension\DebugExtension());
-			$twig->addExtension(new TwigExtension());
-
-			return $twig;
-		});
 		$this->singleton('admin.view', function (AdminContainer $container) {
-			if($this->options['templateSystem'] == 'twig'){
-				return $container->get('admin.twig');
-			} else {
-				return $container->get('admin.blade');
-			}
+			$container->make($this->options['templateSystem']);
 		});
 
 		$this->options['root'] = $this->options['root'] ?: $_SERVER['DOCUMENT_ROOT'];

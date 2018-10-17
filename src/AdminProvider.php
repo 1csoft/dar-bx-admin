@@ -7,9 +7,11 @@
 
 namespace Dar\Admin;
 
+use Bitrix\Main\Loader;
 use Dar\Admin\Builder\IBuilder;
 use Dar\Admin\Builder\ListBuilder;
 use Dar\Admin\Builder\EditBuilder;
+use Dar\Admin\Exceptions\NotModule;
 use Symfony\Component\HttpFoundation\Request;
 
 class AdminProvider
@@ -32,7 +34,7 @@ class AdminProvider
 	protected $url = [
 		'edit' => '',
 		'list' => '',
-		'simple' => ''
+		'simple' => '',
 	];
 
 	protected $baseUrl = 'dar.admin.php';
@@ -45,7 +47,7 @@ class AdminProvider
 	{
 		$this->container = new AdminContainer();
 		$this->request = Request::createFromGlobals();
-		$this->container->bind('admin.request', function (){
+		$this->container->bind('admin.request', function () {
 			return $this->request;
 		});
 
@@ -98,6 +100,11 @@ class AdminProvider
 		$this->url['simple'] = $uri->getUri();
 
 		$this->resource->setUrl($this->url);
+
+		foreach ($this->resource->getModules() as $module) {
+			if(!Loader::includeModule($module))
+				throw new NotModule('Модуль %s не установлен', $module);
+		}
 
 		switch ($type) {
 			case self::TYPE_PAGE_EDIT:
@@ -177,7 +184,7 @@ class AdminProvider
 		$uri = new Uri($this->baseUrl);
 		$uri->addParams([
 			'_resource' => $this->resourceName,
-			'lang' => LANG
+			'lang' => LANG,
 		]);
 
 		return $uri;
@@ -208,5 +215,20 @@ class AdminProvider
 	public function getCurrentResource()
 	{
 		return $this->resource;
+	}
+
+	/**
+	 * @method initCurrentResource
+	 * @return $this
+	 */
+	public function initCurrentResource()
+	{
+		$_resource = $this->request->get('_resource');
+		$items = collect(Configuration::readFile());
+
+		Resource::getInstance()->add($items->get($_resource), $_resource);
+//		$this->addResource($items->get($_resource), $_resource);
+
+		return $this;
 	}
 }

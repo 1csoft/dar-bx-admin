@@ -12,6 +12,7 @@ use Bitrix\Main\Application;
 use Bitrix\Main\Text\Encoding;
 use Dar\Admin\AdminContainer;
 use Dar\Admin\AdminProvider;
+use Dar\Admin\Render\IRenderSystem;
 use Illuminate\View\Factory;
 use Bitrix\Main\EventManager;
 
@@ -233,7 +234,7 @@ abstract class BaseField
 	 *
 	 * @return $this
 	 */
-	public function template($tpl)
+	public function template($tpl = '')
 	{
 		$this->tpl = $tpl;
 
@@ -253,14 +254,6 @@ abstract class BaseField
 			$tpl = $this->tpl;
 		}
 		if (strlen($tpl) > 0){
-			$view = AdminContainer::getInstance()->get('admin.view');
-			if(AdminContainer::getInstance()->getOption('templateSystem') == 'twig'){
-				$tpl .= '.twig';
-//				$tpl = __DIR__.'/../Resources/twig/'.$tpl;
-			} else {
-				$tpl .= '.blade.php';
-				$tpl = __DIR__.'/../Resources/blade/'.$tpl;
-			}
 
 			$context = ['item' => $this];
 			if(!is_array($params))
@@ -276,11 +269,9 @@ abstract class BaseField
 
 			$this->onBeforeRenderField();
 
-			if(AdminContainer::getInstance()->getOption('templateSystem') == 'twig'){
-				return $view->render($tpl, $context);
-			} else {
-				return $view->file($tpl, $context)->render();
-			}
+			/** @var IRenderSystem $view */
+			$view = AdminContainer::getInstance()->get('admin.view');
+			$view->view($tpl, $context);
 		}
 
 		return '';
@@ -485,5 +476,10 @@ abstract class BaseField
 	public function tab($tabName = '')
 	{
 		$this->tab = $tabName;
+	}
+
+	public function renderList($tpl = false, $params = [])
+	{
+
 	}
 }

@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class BasePage implements IResource
 {
+	/** @var array  */
+	protected $modules = [];
 
 	/** @var AdminContainer */
 	protected $container;
@@ -479,6 +481,24 @@ class BasePage implements IResource
 	{
 		$namePage = str_replace('.', '_', $namePage);
 		$this->namePage = $namePage;
+	}
+
+	/**
+	 * @method getModules - get param modules
+	 * @return array
+	 */
+	public function getModules()
+	{
+		return $this->modules;
+	}
+
+	/**
+	 * @method setModules - set param Modules
+	 * @param array $modules
+	 */
+	public function setModules($modules)
+	{
+		$this->modules = $modules;
 	}
 
 //	public function sortItems(Request $request, \CAdminSorting $adminSorting){}
