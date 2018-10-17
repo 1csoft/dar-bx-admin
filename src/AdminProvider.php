@@ -226,8 +226,9 @@ class AdminProvider
 		$_resource = $this->request->get('_resource');
 		$items = collect(Configuration::readFile());
 
-		Resource::getInstance()->add($items->get($_resource), $_resource);
-//		$this->addResource($items->get($_resource), $_resource);
+		if($items->count() > 0){
+			Resource::getInstance()->add($items->get($_resource), $_resource);
+		}
 
 		return $this;
 	}
