@@ -40,7 +40,15 @@ class FieldsCollection extends Collection
 	 */
 	public function add(BaseField $field)
 	{
-		$this->items[$field->getName()] = $field;
+		if($this->items[$field->getName()]){
+			$label = $this->get($field->getName())->getLabel();
+			$field->label($label);
+		}
+
+		$this->delete($field->getName());
+		$this->offsetSet($field->getName(), $field);
+
+//		$this->items[$field->getName()] = $field;
 
 		return $this;
 	}

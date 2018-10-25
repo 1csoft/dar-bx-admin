@@ -1,0 +1,24 @@
+table.edit-table {
+    tbody {
+        display: flex;
+        flex-direction: column;
+    }
+
+    tr {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    textarea {
+        max-width: 100%;
+    }
+}
+
+.field_item-checkbox {
+    display: block;
+    margin-bottom: 10px;
+    cursor: pointer;
+}

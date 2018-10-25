@@ -1,0 +1,17 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    <div class="switcher_field" data-name="{{ name }}">
+        <el-switch :name="dataField.name" v-model="value" active-color="#13ce66"></el-switch>
+        <input type="hidden" name="{{ name }}" value="{{ value }}" />
+    </div>
+{% endblock %}
+{% block page_scripts %}
+    <script>
+	    setTimeout(function () {
+		    window.dar.adminFields['{{ name }}'] = {
+		    	name: '{{ name }}',
+                value: {{ value }},
+            };
+	    });
+    </script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    {% if options.items|length == 1 %}
+        {% set data = options.items[0] %}
+        {% set checked = value == data.value ? 'checked' : '' %}
+        <label>
+            <input type="checkbox" {{ checked }} name="{{ name }}" class="{{ styleClass }}" value="{{ value }}"/>
+            {{ data.label }}
+        </label>
+    {% else %}
+        {% for item in options.items %}
+            {% set checked = item.checked ? 'checked' : '' %}
+            <label class="field_item-checkbox">
+                <input type="checkbox" {{ checked }} name="{{ name }}[{{ item.id }}]" class="{{ styleClass }}" value="{{ item.value }}"/>
+                {{ item.label }}
+            </label>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

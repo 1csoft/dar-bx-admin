@@ -32,6 +32,7 @@ class TwigExtension extends AbstractExtension
 			new TwigFunction('dump', array($this, 'dump')),
 			new TwigFunction('dd', array($this, 'dd')),
 			new TwigFunction('findUser', array($this, 'findUser')),
+			new TwigFunction('phpToJs', array($this, 'phpToJs')),
 		];
 	}
 
@@ -150,5 +151,10 @@ class TwigExtension extends AbstractExtension
 			$pageName, "3", "",
 			"...", "inputtext", "inputbodybutton"
 		);
+	}
+
+	public function phpToJs($data = [])
+	{
+		return \CUtil::PhpToJSObject($data);
 	}
 }

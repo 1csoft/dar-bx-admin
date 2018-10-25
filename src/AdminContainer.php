@@ -11,6 +11,8 @@ namespace Dar\Admin;
 use Arrilot\BitrixBlade\BladeProvider;
 use Bitrix\Main\Application;
 use Bitrix\Main\Config\Configuration;
+use Dar\Admin\Render\IRenderSystem;
+use Dar\Admin\Render\TwigSystem;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -19,10 +21,10 @@ class AdminContainer extends \Illuminate\Container\Container
 
 	/** @var array  */
 	protected $options = [
-		'templateSystem' => 'admin.twig',
+		'templateSystem' => TwigSystem::class,
 		'jsPath' => __DIR__.'/Resources/js',
 		'cssPath' => __DIR__.'/Resources/css',
-		'root' => false
+		'root' => false,
 	];
 
 	public function __construct()
@@ -37,9 +39,8 @@ class AdminContainer extends \Illuminate\Container\Container
 //		BladeProvider::register(__DIR__.'/Resources/blade');
 //		$this->instance('admin.blade', BladeProvider::getViewFactory());
 
-		$this->singleton('admin.view', function (AdminContainer $container) {
-			$container->make($this->options['templateSystem']);
-		});
+		$renderSystem = new $this->options['templateSystem']();
+		$this->bind(IRenderSystem::class, $renderSystem);
 
 		$this->options['root'] = $this->options['root'] ?: $_SERVER['DOCUMENT_ROOT'];
 

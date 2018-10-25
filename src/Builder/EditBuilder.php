@@ -15,8 +15,10 @@ use Dar\Admin\AdminContainer;
 use Dar\Admin\AdminProvider;
 use Dar\Admin\AdminSupport;
 use Dar\Admin\BasePage;
+use Dar\Admin\Fields\Switcher;
 use Dar\Admin\IResource;
 use Dar\Admin\Uri;
+use Soft1c\Logger\FilesLog;
 use Symfony\Component\HttpFoundation\Request;
 
 class EditBuilder extends MainBuilder
@@ -133,6 +135,9 @@ class EditBuilder extends MainBuilder
 			}
 
 			$this->resource->saveElement($data);
+//			if($request->request->has('apply')){
+//				LocalRedirect($request->getUri());
+//			}
 		}
 	}
 
@@ -173,6 +178,9 @@ class EditBuilder extends MainBuilder
 	{
 		foreach ($data as $code => $value) {
 			$this->resource->fields()->get($code)->value($value);
+//			if(	$this->resource->fields()->get($code) instanceof Switcher){
+//				dump($value);
+//			}
 		}
 	}
 }

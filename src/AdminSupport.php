@@ -166,14 +166,17 @@ class AdminSupport
 
 	public static function registerCustomJsLib()
 	{
-		$jsPath = __DIR__.'/Resources/js';
-		$cssPath = __DIR__.'/Resources/css';
-		static::getLocalPath($jsPath.'/fields.js');
+		$jsPath = __DIR__.'/Resources/assets/js';
+		$cssPath = __DIR__.'/Resources/assets/css';
 
 		\CJSCore::RegisterExt('admin_fields', [
 			'js' => [
-				static::getLocalPath($jsPath.'/fields.js')
-			]
+				static::getLocalPath($jsPath.'/customFields.js'),
+			],
+			'css' => [
+				static::getLocalPath($jsPath.'/customFields.css'),
+				static::getLocalPath($cssPath.'/customFields.css'),
+			],
 		]);
 		\CJSCore::RegisterExt('lodash', ['js' => static::getLocalPath($jsPath.'/lodash.min.js')]);
 		\CJSCore::RegisterExt('jquery3', ['js' => 'https://code.jquery.com/jquery-3.3.1.min.js']);
@@ -189,11 +192,24 @@ class AdminSupport
 	public static function getLocalPath(string $path)
 	{
 		$root = Main\Application::getDocumentRoot();
-		if(AdminContainer::getOption('root')){
+		if (AdminContainer::getOption('root')){
 			$root = AdminContainer::getOption('root');
 		}
 
 		return str_replace($root, '', $path);
 	}
 
+	/**
+	 * @method getUser
+	 * @return \CAllUser|\CUser
+	 */
+	public static function getUser()
+	{
+		global $USER;
+		if (!$USER instanceof \CUser){
+			$USER = new \CUser();
+		}
+
+		return $USER;
+	}
 }

@@ -9,40 +9,49 @@ namespace Dar\Admin;
 
 
 use Bitrix\Main\Application;
+use Dar\Admin\SystemPages;
 
 class Configuration
 {
-	protected static $fille = null;
+	protected static $file = null;
 
 	/**
-	 * @method getFille - get param fille
-	 * @return string
+	 * @method getFile - get param file
+	 * @return array
 	 */
-	public static function getFille()
+	public static function getFile(): array
 	{
-		return self::$fille;
+		if(file_exists(self::$file)){
+			return require_once(self::$file);
+		}
+		return [];
 	}
 
 	/**
-	 * @method setFille - set param Fille
+	 * @method setFile - set param File
 	 * @param string $fille
 	 */
-	public static function setFille($fille)
+	public static function setFile($file)
 	{
-		self::$fille = $fille;
+		self::$file = $file;
 	}
 
 	public static function readFile()
 	{
-		if(is_null(static::$fille)){
+		if(is_null(static::$file)){
 			$config = \Bitrix\Main\Config\Configuration::getValue('dar.admin')['config'];
 			if(strlen($config) == 0){
 				$config = '/local/config/dar.admin.php';
 			}
 
-			static::setFille($config);
+			static::setFile(Application::getDocumentRoot().$config);
 		}
 
-		return require_once(Application::getDocumentRoot().static::getFille());
+		$configData = static::getFile();
+		$configData['entities']['iblock.elements'] = SystemPages\IblockElementPage::class;
+		$configData['entities']['user.search'] = SystemPages\UserSearchPage::class;
+
+
+		return $configData;
 	}
 }

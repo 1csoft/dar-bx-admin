@@ -8,6 +8,8 @@
 namespace Dar\Admin\Render;
 
 
+use Illuminate\Support\Collection;
+
 interface IRenderSystem
 {
 	/**
@@ -18,4 +20,10 @@ interface IRenderSystem
 	 * @return string
 	 */
 	public function view(string $templateName, $context = []): string;
+
+	/**
+	 * @method getExtension
+	 * @return Collection
+	 */
+	public function getExtension(): Collection;
 }

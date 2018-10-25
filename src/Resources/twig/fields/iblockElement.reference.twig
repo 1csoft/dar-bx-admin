@@ -1,0 +1,19 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+    <div class="iblock_element_field" data-name="{{ name }}">
+        {% verbatim %}
+            <input size="7" type="text" v-model="inputVal" :name="inputName"/>
+            <input class="open_edit_element" type="button" value="..." @click="openPanel()" />&nbsp;
+            <span v-html="displayName"></span>
+        {% endverbatim %}
+    </div>
+{% endblock %}
+{% block page_scripts %}
+<script>
+    setTimeout(function () {
+	    var item = {{ phpToJs(element) |raw}};
+	    item.PopupUrl = '{{ item.getPopupUrl(element) | raw}}';
+	    window.dar.adminFields['{{ name }}'] = item;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'form.row.twig' %}
+{% block field %}
+	{% if item.isDisabled() %}
+		<a href="{{ element.urlEdit }}" target="_blank">{{ options.userName }}</a>
+	{% else %}
+		<div class="iblock_element_field" data-name="{{ name }}">
+            {% verbatim %}
+            <input size="7" type="text" v-model="inputVal" :name="inputName"/>
+            <input class="open_edit_element" type="button" value="..." @click="openPanel()" />&nbsp;
+            <span v-html="displayName"></span>
+        {% endverbatim %}
+		</div>
+	{% endif %}
+{% endblock %}
+{% block page_scripts %}
+    <script>
+		setTimeout(function () {
+			var item = {{ phpToJs(element) |raw}};
+			item.PopupUrl = '{{ element.urlSearch | raw}}';
+			window.dar.adminFields['{{ name }}'] = item;
+		});
+    </script>
+{% endblock %}

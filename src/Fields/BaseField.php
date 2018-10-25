@@ -16,6 +16,16 @@ use Dar\Admin\Render\IRenderSystem;
 use Illuminate\View\Factory;
 use Bitrix\Main\EventManager;
 
+
+/**
+ * Class BaseField
+ * @package Dar\Admin\Fields
+ *
+ * @method BaseField iblockId(int $iblockId)
+ * @method BaseField type(string $type)
+ * @method BaseField items(array $items)
+ *
+ */
 abstract class BaseField
 {
 
@@ -71,12 +81,11 @@ abstract class BaseField
 	protected function __construct($name = null)
 	{
 		$this->name = $name;
-		$this->eventManger = EventManager::getInstance();
-
-		$this->eventManger->addEventHandler('main', 'OnAdminTabControlBegin', function (){
-			$this->onBeforeRenderField();
-		}, false, 1);
-
+//		$this->eventManger = EventManager::getInstance();
+//		$this->eventManger->addEventHandler('main', 'OnAdminTabControlBegin', function (){
+//			$this->onBeforeRenderField();
+//		}, false, 1);
+//
 		if(AdminContainer::getRequest()->request->has($name)){
 			$this->value(AdminContainer::getRequest()->request->get($name));
 		}
@@ -155,7 +164,6 @@ abstract class BaseField
 	 */
 	public function label(string $label): BaseField
 	{
-//		$label = Encoding::convertEncoding($label, 'cp1251', 'utf-8');
 		$this->label = $label;
 
 		return $this;
@@ -199,6 +207,10 @@ abstract class BaseField
 	public function value($value)
 	{
 		$this->value = $value;
+
+		if($this->getName() == 'EXCLUDE_REPORT'){
+//			dump($this->value);
+		}
 
 		return $this;
 	}
@@ -265,13 +277,20 @@ abstract class BaseField
 			$context['options'] = $this->getOptions();
 			$context['label'] = $this->getLabel();
 
+
 			$context += $params;
+
+			if($this->getName() === 'EXCLUDE_REPORT'){
+//				dump($this);
+			}
 
 			$this->onBeforeRenderField();
 
 			/** @var IRenderSystem $view */
-			$view = AdminContainer::getInstance()->get('admin.view');
-			$view->view($tpl, $context);
+			$view = AdminContainer::getInstance()->get(IRenderSystem::class);
+			$tpl = $tpl.'.twig';
+
+			return $view->view($tpl, $context);
 		}
 
 		return '';
@@ -449,10 +468,14 @@ abstract class BaseField
 	/**
 	 * @method disabled
 	 * @param bool $v
+	 *
+	 * @return $this
 	 */
 	public function disabled($v = true)
 	{
 		$this->disabled = $v;
+
+		return $this;
 	}
 
 	/**

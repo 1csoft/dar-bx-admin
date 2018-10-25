@@ -170,6 +170,8 @@ class ListBuilder implements IBuilderLIst
 
 		$this->query->addOrder($this->CAdminSorting->getField(),$this->CAdminSorting->getOrder());
 
+		$this->query = $this->resource->onBeforeExecList($this->query);
+
 		$obItems = $this->query->exec();
 		$nav->setRecordCount($obItems->getCount());
 		$this->CAdminList->setNavigation($nav, 'Страница', false);
@@ -228,7 +230,7 @@ class ListBuilder implements IBuilderLIst
 					'id' => $field->getName(),
 					'name' => $field->getLabel(),
 					'filterable' => true,
-					"default" => true,
+					"default" => $field->getDefault(),
 				];
 				/*$filterFields = array(
 					array(

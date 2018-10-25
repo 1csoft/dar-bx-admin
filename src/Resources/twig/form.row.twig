@@ -1,3 +1,5 @@
+{% extends 'page.field.twig' %}
+{% block form_data %}
 <tr>
     <td width="30%" style="text-align: right; padding: 15px">
         {% if item.isRequired() %}
@@ -11,3 +13,4 @@
         {% block field %}{% endblock %}
     </td>
 </tr>
+{% endblock %}

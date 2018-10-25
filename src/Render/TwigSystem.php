@@ -9,6 +9,9 @@ namespace Dar\Admin\Render;
 
 
 use Dar\Admin\AdminContainer;
+use Bitrix\Main\Application;
+use Dar\Admin\TwigExtension;
+use Illuminate\Support\Collection;
 
 class TwigSystem implements IRenderSystem
 {
@@ -20,7 +23,7 @@ class TwigSystem implements IRenderSystem
 	 */
 	public function __construct()
 	{
-		$twigLoader = new \Twig\Loader\FilesystemLoader(__DIR__.'/Resources/twig');
+		$twigLoader = new \Twig\Loader\FilesystemLoader(__DIR__.'/../Resources/twig');
 		$this->twig = new \Twig\Environment($twigLoader, [
 			'cache' => $_SERVER['DOCUMENT_ROOT'].'/bitrix/cache/twig_templates',
 			'charset' => Application::isUtfMode() ? 'utf-8' : 'cp1251',
@@ -48,5 +51,13 @@ class TwigSystem implements IRenderSystem
 		return $this->twig->render($templateName, $context);
 	}
 
+	/**
+	 * @method getExtension
+	 * @return Collection
+	 */
+	public function getExtension(): Collection
+	{
+		return collect(['.twig', '.html.twig']);
+	}
 
 }

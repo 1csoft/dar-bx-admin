@@ -111,7 +111,6 @@ class AdminProvider
 				$this->container->bind(IBuilder::class, function () {
 					$builder = new EditBuilder($this->resource);
 					$builder->createAdminInstance($this->resourceName);
-
 					return $builder;
 				});
 				break;
@@ -133,7 +132,7 @@ class AdminProvider
 				break;
 		}
 
-		return $this->container->make(IBuilder::class);
+		return $this;
 	}
 
 	public function createPage()
@@ -224,7 +223,7 @@ class AdminProvider
 	public function initCurrentResource()
 	{
 		$_resource = $this->request->get('_resource');
-		$items = collect(Configuration::readFile());
+		$items = collect(Configuration::readFile()['entities']);
 
 		if($items->count() > 0){
 			Resource::getInstance()->add($items->get($_resource), $_resource);

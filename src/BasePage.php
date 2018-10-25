@@ -501,5 +501,14 @@ class BasePage implements IResource
 		$this->modules = $modules;
 	}
 
-//	public function sortItems(Request $request, \CAdminSorting $adminSorting){}
+	/**
+	 * @method onBeforeExecList
+	 * @param Main\Entity\Query $query
+	 *
+	 * @return Main\Entity\Query
+	 */
+	public function onBeforeExecList(Main\Entity\Query $query)
+	{
+		return $query;
+	}
 }
