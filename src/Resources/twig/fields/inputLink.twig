@@ -2,3 +2,8 @@
 {% block field %}
     <input size="47" type="{{ type }}" name="{{ name }}" class="{{ styleClass }}" value="{{ value }}"/>
 {% endblock %}
+{% block row_field %}
+    {% if _type == 'LIST' %}
+        <a href="{{ link }}" target="_blank">{{ value }}</a>
+    {% endif %}
+{% endblock %}

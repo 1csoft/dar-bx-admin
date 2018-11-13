@@ -66,6 +66,10 @@ $(function () {
 						this.inputVal = event.data.elementId;
 						this.displayName = event.data.name;
 
+						if(event.data.hasOwnProperty('callback') && window.hasOwnProperty('ResellerPriceSelected')){
+							window.ResellerPriceSelected(this, event);
+						}
+
 						event.sender.close();
 					}
 				});

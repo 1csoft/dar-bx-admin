@@ -26,7 +26,12 @@ if ($isPopup){
 
 //dump($page);
 if(BX_ADMIN_SECTION_404 !== 'Y'){
-	$AdminProvider->createPage()->render();
+	try{
+		$AdminProvider->createPage()->render();
+	} catch (\Dar\Admin\Exceptions\NotFoundResource $err){
+		include $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/admin/404.php';
+	}
+
 }
 if ($isPopup){
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");

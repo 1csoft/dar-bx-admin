@@ -9,11 +9,12 @@ namespace Dar\Admin\Fields;
 
 
 use Bitrix\Main\Application;
+use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\Text\Encoding;
 use Dar\Admin\AdminContainer;
-use Dar\Admin\AdminProvider;
+use Dar\Admin\BasePage;
 use Dar\Admin\Render\IRenderSystem;
-use Illuminate\View\Factory;
+use Dar\Admin\Render\TwigSystem;
 use Bitrix\Main\EventManager;
 
 
@@ -24,6 +25,9 @@ use Bitrix\Main\EventManager;
  * @method BaseField iblockId(int $iblockId)
  * @method BaseField type(string $type)
  * @method BaseField items(array $items)
+ * @method BaseField setDefaultValue($value)
+ * @method BasePage getRef()
+ * @method BaseField setRef(string $alias, $ref = '')
  *
  */
 abstract class BaseField
@@ -77,6 +81,8 @@ abstract class BaseField
 	protected $options = [];
 
 	protected $tab;
+
+	protected $reference = false;
 
 	protected function __construct($name = null)
 	{
@@ -277,12 +283,9 @@ abstract class BaseField
 			$context['options'] = $this->getOptions();
 			$context['label'] = $this->getLabel();
 
+			$context['_type'] = AdminContainer::getRequest()->query->get('_type');
 
 			$context += $params;
-
-			if($this->getName() === 'EXCLUDE_REPORT'){
-//				dump($this);
-			}
 
 			$this->onBeforeRenderField();
 
@@ -503,6 +506,39 @@ abstract class BaseField
 
 	public function renderList($tpl = false, $params = [])
 	{
+		if(!$tpl)
+			return false;
 
+		/** @var TwigSystem $view */
+		$view = AdminContainer::getInstance()->get(IRenderSystem::class);
+		$tpl = $tpl.'.twig';
+
+		$params['_type'] = $params['_type'] ?: 'LIST';
+		$context = ['item' => $this] + $params;
+
+		return $view->getViewSystem()->load($tpl)->renderBlock('row_field', $context);
 	}
+
+	/**
+	 * @method reference
+	 * @param string $definition
+	 *
+	 * @return $this
+	 */
+	public function reference(string $definition)
+	{
+		$this->reference = $definition;
+
+		return $this;
+	}
+
+	/**
+	 * @method getReference - get param reference
+	 * @return bool
+	 */
+	public function getReference()
+	{
+		return $this->reference;
+	}
+
 }

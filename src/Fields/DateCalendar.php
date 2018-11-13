@@ -12,7 +12,7 @@ use Bitrix\Main\Type\DateTime;
 
 class DateCalendar extends BaseField
 {
-	public function render($tpl = 'fields/calendar')
+	public function render($tpl = 'fields/calendar', $params = [])
 	{
 		return parent::render($tpl, ['value' => $this->getValue()->toString()]);
 	}

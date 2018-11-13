@@ -105,4 +105,8 @@ class IblockElementPage extends BasePage
 	}
 
 
+	public function contextListMenu()
+	{
+		return [];
+	}
 }

@@ -60,4 +60,12 @@ class TwigSystem implements IRenderSystem
 		return collect(['.twig', '.html.twig']);
 	}
 
+	/**
+	 * @method getViewSystem
+	 * @return \Twig\Environment
+	 */
+	public function getViewSystem()
+	{
+		return $this->twig;
+	}
 }

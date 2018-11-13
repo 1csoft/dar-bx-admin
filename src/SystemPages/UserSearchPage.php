@@ -47,7 +47,9 @@ class UserSearchPage extends BasePage
 	{
 		if(is_null($this->fields)){
 			$this->fields = parent::fields();
-
+			$this->fields->delete([
+				'PASSWORD', 'BX_USER_ID'
+			]);
 			$this->fields->get('ID')->isDefault();
 			$this->fields->get('LOGIN')->isDefault();
 			$this->fields->get('EMAIL')->isDefault();
@@ -57,5 +59,8 @@ class UserSearchPage extends BasePage
 		return $this->fields;
 	}
 
-
+	public function contextListMenu()
+	{
+		return [];
+	}
 }

@@ -26,4 +26,6 @@ interface IRenderSystem
 	 * @return Collection
 	 */
 	public function getExtension(): Collection;
+
+	public function getViewSystem();
 }

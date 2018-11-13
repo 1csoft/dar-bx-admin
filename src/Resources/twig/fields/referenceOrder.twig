@@ -9,13 +9,13 @@
     </div>
 {% endblock %}
 {% block page_scripts %}
-<script>
-    setTimeout(function () {
-	    var item = {{ phpToJs(element) |raw}};
-	    item.PopupUrl = '{{ item.getPopupUrl(element) | raw}}';
-	    window.dar.adminFields['{{ name }}'] = item;
-    });
-</script>
+    <script>
+		setTimeout(function () {
+			var item = {{ phpToJs(element) |raw}};
+			item.PopupUrl = '{{ item.getPopupUrl(element) | raw}}';
+			window.dar.adminFields['{{ name }}'] = item;
+		});
+    </script>
 {% endblock %}
 {% block row_field %}
     {{ display_name | raw}}

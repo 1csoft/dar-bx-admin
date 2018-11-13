@@ -146,7 +146,7 @@ class ListBuilder implements IBuilderLIst
 
 	public function exec()
 	{
-		$nav = new Main\UI\PageNavigation("pages-import-admin");
+		$nav = new Main\UI\PageNavigation("pages-admin");
 		$nav->setPageSize($this->CAdminList->getNavSize());
 		$nav->initFromUri();
 
@@ -161,7 +161,12 @@ class ListBuilder implements IBuilderLIst
 			$this->query->addFilter($k, $v);
 		}
 		foreach ($this->CAdminList->GetVisibleHeaderColumns() as $column) {
-			$this->query->addSelect($column);
+			if($this->resource->fields()->get($column)->getReference()){
+				$this->query->addSelect($this->resource->fields()->get($column)->getReference(), $column);
+			} else {
+				$this->query->addSelect($column);
+			}
+
 		}
 		$this->query->setOffset($nav->getOffset());
 		$this->query->countTotal(true);
@@ -177,11 +182,17 @@ class ListBuilder implements IBuilderLIst
 		$this->CAdminList->setNavigation($nav, 'Страница', false);
 
 		$ufId = $this->resource::getUfId();
+
 		while ($item = $obItems->fetch()) {
 			$ID = $item["ID"];
 			$row =& $this->CAdminList->addRow($ID, $item);
 			foreach ($item as $k => $value) {
-				$row->addViewField($k, $value);
+				if($this->resource->fields()->has($k)){
+					$row->addViewField($k, $this->resource->fields()->get($k)->renderList('', ['value' => $value]));
+				} else {
+					$row->addViewField($k, $value);
+				}
+
 			}
 
 			if (!is_null($ufId)){

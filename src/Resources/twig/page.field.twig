@@ -1,4 +1,9 @@
 {% block form_data %}{% endblock %}
 {% block filter_data %}{% endblock %}
 {% block table_data %}{% endblock %}
+{% block row_field %}
+    {% if _type == 'LIST' %}
+      {{ value }}
+    {% endif %}
+{% endblock %}
 {% block page_scripts %}{% endblock %}

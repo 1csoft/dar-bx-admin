@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class BasePage implements IResource
 {
-	/** @var array  */
+	/** @var array */
 	protected $modules = [];
 
 	/** @var AdminContainer */
@@ -40,7 +40,7 @@ class BasePage implements IResource
 	/** @var Translator */
 	protected $Translator;
 
-	/** @var BaseField[]|FieldsCollection */
+	/** @var FieldsCollection */
 	public $fields = null;
 
 	protected $fieldMap = [];
@@ -62,6 +62,14 @@ class BasePage implements IResource
 
 	protected $namePage = '';
 
+	protected $relationships = [];
+
+	/** @var Tabs[] */
+	protected $tabs = null;
+
+	/** @var BasePage[] */
+	protected $relationResource;
+
 	const TYPE_SIMPLE = 'SIMPLE';
 	const TYPE_LIST = 'LIST';
 	const TYPE_EDIT = 'EDIT';
@@ -69,7 +77,7 @@ class BasePage implements IResource
 	public function __construct()
 	{
 		$this->container = AdminContainer::getInstance();
-		$this->typeEntity = static::TYPE_SIMPLE;
+		$this->typeEntity = static::TYPE_LIST;
 		$this->request = AdminContainer::getRequest();
 
 		$this->setLangMessages()->loadResourceMessage();
@@ -97,10 +105,12 @@ class BasePage implements IResource
 	public function getTabs()
 	{
 		$name = array_pop(explode('\\', static::$model));
-
-		return [
-			Tabs::create('edit_'.$name)->name($this->trans('main.tabs.edit'))->setFields($this->fields()),
-		];
+		if(is_null($this->tabs)){
+			$this->tabs =  [
+				Tabs::create('edit_'.$name)->name($this->trans('main.tabs.edit'))->setFields($this->fields()),
+			];
+		}
+		return $this->tabs;
 	}
 
 	/**
@@ -118,19 +128,23 @@ class BasePage implements IResource
 
 	/**
 	 * @method fields
-	 * @return FieldsCollection|BaseField[]
+	 *
+	 * @return FieldsCollection
 	 */
 	public function fields()
 	{
-		if (static::getModel() instanceof Main\Entity\Base && is_null($this->fields)){
-			$fields = AdminSupport::convertFields(static::getModel());
-			foreach ($fields as $k => $item) {
-				$this->fields[$item->getName()] = $item;
-				$this->fieldMap[$item->getName()] = $k;
+		if(is_null($this->fields)){
+			if (static::getModel() instanceof Main\Entity\Base && is_null($this->fields)){
+				$fields = AdminSupport::convertFields(static::getModel());
+				foreach ($fields as $k => $item) {
+					$this->fields[$item->getName()] = $item;
+					$this->fieldMap[$item->getName()] = $k;
+				}
 			}
+			$this->fields = new FieldsCollection($this->fields);
 		}
 
-		return new FieldsCollection($this->fields);
+		return $this->fields;
 	}
 
 	/**
@@ -172,9 +186,11 @@ class BasePage implements IResource
 		$this->url = $url;
 	}
 
-	public function editLink()
+	public function editLink($primaryValue = false)
 	{
-		return $this->url['edit'];
+		$primary = $this->getEntity()->getPrimary();
+
+		return $this->url['edit'].($primaryValue ? '&'.$primary.'='.$primaryValue : false);
 	}
 
 	public function listLink()
@@ -366,7 +382,7 @@ class BasePage implements IResource
 		$lAdmin = AdminContainer::getInstance()->get('CAdminList');
 
 		$uri = new Uri($this->getUrl('edit'));
-		$uri->setParam('ID', $data['ID']);
+		$uri->setParam($this->getEntity()->getPrimary(), $data[$this->getEntity()->getPrimary()]);
 
 		$actions = [
 			array(
@@ -382,8 +398,8 @@ class BasePage implements IResource
 		$actions[] = [
 			"ICON" => "delete",
 			"TEXT" => $this->trans('main.actions.del'),
-//			"ACTION"=>"if(confirm('Это правда надо грохнуть?')) ".$lAdmin->actionDoGroup($data['ID'], "delete")
-			"ACTION" => $lAdmin->actionDoGroup($data['ID'], "delete"),
+			"ACTION"=>"if(confirm('".utf8win1251('Это правда надо грохнуть?')."')) ".$lAdmin->actionDoGroup($data[$this->getEntity()->getPrimary()], "delete")
+//			"ACTION" => $lAdmin->actionDoGroup($data[$this->getEntity()->getPrimary()], "delete"),
 		];
 
 		return $actions;
@@ -460,7 +476,7 @@ class BasePage implements IResource
 			"btnSave" => true,
 			"btnCancel" => true,
 			"btnSaveAndAdd" => true,
-			'back_url' => $this->getUrl('list')
+			'back_url' => $this->getUrl('list'),
 		);
 	}
 
@@ -510,5 +526,64 @@ class BasePage implements IResource
 	public function onBeforeExecList(Main\Entity\Query $query)
 	{
 		return $query;
+	}
+
+	/**
+	 * @method getRelationships - get param relationships
+	 * @return BasePage[]
+	 */
+	public function getRelationships()
+	{
+		return $this->relationships;
+	}
+
+	public function refreshFields()
+	{
+		$this->fields = null;
+		$this->fields();
+	}
+
+	/**
+	 * @method getRelationResource - get param relationResource
+	 * @return BasePage[]
+	 */
+	public function getRelationResource()
+	{
+		return $this->relationResource;
+	}
+
+	public function setRelationResource()
+	{
+
+
+//		$this->relationResource = $relationResource;
+
+		return $this;
+	}
+
+	/**
+	 * @method addExternalJs
+	 * @return array
+	 */
+	public function addExternalJs()
+	{
+		return [
+			self::TYPE_EDIT => [],
+			self::TYPE_LIST => [],
+			self::TYPE_SIMPLE => []
+		];
+	}
+
+	/**\
+	 * @method addExternalCss
+	 * @return array
+	 */
+	public function addExternalCss()
+	{
+		return [
+			self::TYPE_EDIT => [],
+			self::TYPE_LIST => [],
+			self::TYPE_SIMPLE => []
+		];
 	}
 }

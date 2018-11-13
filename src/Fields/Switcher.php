@@ -65,7 +65,6 @@ class Switcher extends BaseField
 	 */
 	public function value($value)
 	{
-
 		if ($this->value !== $value && AdminContainer::getRequest()->request->has($this->name)){
 			// todo переписать сей костылёк
 			if($value == 1)
@@ -98,6 +97,9 @@ class Switcher extends BaseField
 	 */
 	public function getValue()
 	{
+		if(is_null($this->value))
+			$this->value = 0;
+
 		switch ($this->type) {
 			case 'bool':
 			case 'boolean':
@@ -112,4 +114,18 @@ class Switcher extends BaseField
 		}
 	}
 
+	/**
+	 * @method setDefaultValue
+	 * @param $val
+	 *
+	 * @return BaseField
+	 */
+	public function setDefaultValue($val)
+	{
+		if(!AdminContainer::getRequest()->query->has('ID') && empty($this->value)){
+			return $this->value($val);
+		}
+
+		return $this;
+	}
 }

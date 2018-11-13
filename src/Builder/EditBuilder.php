@@ -9,16 +9,17 @@ namespace Dar\Admin\Builder;
 
 
 use Bitrix\Main\DB\Result;
-use Bitrix\Main\Entity\Query;
-use Bitrix\Main\EventManager;
+use Bitrix\Main\Entity\IntegerField;
+use Bitrix\Main\ORM\Query\Query;
+use Bitrix\Main\Entity\ScalarField;
+use Bitrix\Main\Page\Asset;
 use Dar\Admin\AdminContainer;
-use Dar\Admin\AdminProvider;
 use Dar\Admin\AdminSupport;
 use Dar\Admin\BasePage;
-use Dar\Admin\Fields\Switcher;
+use Dar\Admin\Exceptions\NotFoundResource;
+use Dar\Admin\Fields\HideInput;
 use Dar\Admin\IResource;
 use Dar\Admin\Uri;
-use Soft1c\Logger\FilesLog;
 use Symfony\Component\HttpFoundation\Request;
 
 class EditBuilder extends MainBuilder
@@ -31,6 +32,8 @@ class EditBuilder extends MainBuilder
 
 	/** @var \CAdminContextMenu */
 	protected $CAdminContextMenu;
+
+	protected $includeModels;
 
 	public function __construct(IResource $resource)
 	{
@@ -56,8 +59,24 @@ class EditBuilder extends MainBuilder
 			$name = randString();
 		}
 
+		$this->saveElement();
+
+		$primary = $this->resource->getEntity()->getPrimary();
+		if($this->request->query->has($primary)){
+			$arElement = $this->getElement()->fetch();
+			if (!$arElement){
+				throw new NotFoundResource('Ёлемент не найден');
+			}
+
+			$this->setFieldValues($arElement);
+			if($arElement){
+				$this->includeModels = $this->getIncludes($arElement);
+			}
+		}
+
 		$name = str_replace('.', '_', $name);
 		$tabsConfig = [];
+
 		/** @var Tabs $tab */
 		foreach ($this->resource->getTabs() as $tab) {
 			$tabsConfig[] = $tab->toArray();
@@ -66,10 +85,6 @@ class EditBuilder extends MainBuilder
 		$this->CAdminTabControl = new \CAdminForm($name, $tabsConfig);
 		$this->CAdminContextMenu = new \CAdminContextMenu($this->resource->contextEditMenu());
 //		$this->CAdminForm = new \CAdminForm();
-
-		$this->saveElement();
-		$arElement = $this->getElement()->fetch();
-		$this->setFieldValues($arElement);
 
 		return $this;
 	}
@@ -84,7 +99,7 @@ class EditBuilder extends MainBuilder
 			->setParam('lang', LANG);
 
 		$this->CAdminTabControl->Begin([
-			"FORM_ACTION" => $uri->getUri()
+			"FORM_ACTION" => $uri->getUri(),
 		]);
 		/** @var Tabs $tab */
 		foreach ($this->resource->getTabs() as $tab) {
@@ -107,10 +122,19 @@ class EditBuilder extends MainBuilder
 		$this->CAdminTabControl->Show();
 	}
 
+	/**
+	 * @method onBeforeRenderTabs
+	 */
 	public function onBeforeRenderTabs()
 	{
 		AdminSupport::registerCustomJsLib();
 
+		foreach ($this->resource->addExternalCss()['EDIT'] as $css) {
+			AdminContainer::application()->SetAdditionalCSS($css);
+		}
+		foreach ($this->resource->addExternalJs()['EDIT'] as $js) {
+			Asset::getInstance()->addJs($js);
+		}
 	}
 
 	/**
@@ -122,65 +146,152 @@ class EditBuilder extends MainBuilder
 		$request = AdminContainer::getInstance()->get('admin.request');
 		if ($request->isMethod('POST')){
 			$data = [
-				'post' => $request->request->all(),
 				'entity' => [],
 				'files' => $request->files->all(),
 				'query' => $request->query->all(),
+				'post' => $request->request->all(),
 			];
+
 			$entity = $this->resource->getModel();
-			foreach ($request->request->all() as $code => $value) {
-				if ($entity->hasField($code)){
-					$data['entity'][$code] = $this->resource->findField($code)->getValue();
+			$resourceFields = $this->resource->fields();
+			foreach ($resourceFields as $field) {
+				if($entity->getField($field->getName()) && $entity->getField($field->getName()) instanceof ScalarField){
+					$data['entity'][$field->getName()] = $field->getValue();
 				}
 			}
 
 			$this->resource->saveElement($data);
-//			if($request->request->has('apply')){
-//				LocalRedirect($request->getUri());
-//			}
+			/*collect($this->resource->getTabs())->each(function (Tabs $tabs) use ($data){
+				if(!empty($tabs->getRelationship())){
+					$refResource = $this->includeModels;
+
+
+					$refEntity = $refResource->getEntity();
+					$refData = $data;
+					$refData['entity'] = [];
+					foreach ($refResource->fields() as $cc => $vv) {
+						if($refEntity->getField($vv->getName()) && $refEntity->getField($vv->getName()) instanceof ScalarField){
+							$refData['entity'][$vv->getName()] = $vv->getValue();
+							//$refData['entity'][$vv->getName()] = $this->request->request->get($cc);
+						}
+					}
+
+					$relation = collect($this->resource->getRelationships())->first(function ($el) use ($refResource){
+						return $el['model'] == get_class($refResource);
+					});
+					$refValue = $this->resource->fields()->get($relation['this'])->getValue();
+					$refData['entity'][$relation['this']] = $refValue;
+
+					$refResource->fields()->get($relation['this'])->value($refValue);
+					$refResource->saveElement($refData);
+
+				}
+			});*/
+
+			if($request->request->has('apply')){
+				$primary = $this->resource->getEntity()->getPrimary();
+				$id = $this->resource->findField($primary)->getValue();
+				LocalRedirect($this->resource->editLink($id));
+			}
+
+			if($request->request->has('save')){
+				LocalRedirect($this->resource->listLink());
+			}
+
+			if($request->request->has('save_and_add')){
+				LocalRedirect($this->resource->editLink());
+			}
 		}
 	}
 
 	/**
 	 * @method getElement
+	 * @param BasePage|null $resource
+	 * @param array $filter
+	 *
 	 * @return \Bitrix\Main\DB\Result
 	 */
-	public function getElement()
+	public function getElement(BasePage $resource = null, $filter = [])
 	{
-		$entity = $this->resource->getEntity();
+		if(!$resource instanceof IResource){
+			$resource = $this->resource;
+		}
+		$entity = $resource->getEntity();
 		$primary = $entity->getPrimary();
-		$query = new Query($this->resource->getEntity());
+		$query = new Query($entity);
 
-		foreach ($this->resource->fields() as $field) {
+		foreach ($resource->fields() as $field) {
 			$code = $field->getName();
 			if ($entity->hasField($code)){
 				$query->addSelect($code, $code);
 			}
 		}
+
 		$primaryValue = $this->request->get($primary);
-		$query->where($primary, '=', $primaryValue);
+		if ($entity->getField($primary) instanceof IntegerField){
+			$primaryValue = (int)$primaryValue;
+		}
+		if(count($filter) > 0){
+			$query->setFilter($filter);
+		} else {
+			$query->where($primary, '=', $primaryValue);
+		}
+
 		$query->setLimit(1);
 
-		if(method_exists($this->resource, 'beforeExecElement')){
-			$query = $this->resource->beforeExecElement($query);
+		if (method_exists($resource, 'beforeExecElement')){
+			$query = $resource->beforeExecElement($query);
 		}
 
 		$obResult = $query->exec();
-		if(method_exists($this->resource, 'beforeFetchElement')){
+		if (method_exists($resource, 'beforeFetchElement')){
 			/** @var Result $obResult */
-			$obResult = $this->resource->beforeFetchElement($obResult);
+			$obResult = $resource->beforeFetchElement($obResult);
 		}
 
 		return $obResult;
 	}
 
-	public function setFieldValues($data = [])
+	public function setFieldValues($data = [], BasePage $resource = null)
 	{
-		foreach ($data as $code => $value) {
-			$this->resource->fields()->get($code)->value($value);
-//			if(	$this->resource->fields()->get($code) instanceof Switcher){
-//				dump($value);
-//			}
+		if(!$resource instanceof IResource){
+			$resource = $this->resource;
 		}
+
+		foreach ($data as $code => $value) {
+			$resource->fields()->get($code)->value($value);
+		}
+	}
+
+	/**
+	 * @method getIncludes
+	 * @param $primaryData
+	 *
+	 * @return BasePage[]
+	 */
+	public function getIncludes($primaryData)
+	{
+		$includes = [];
+		foreach ($this->resource->getRelationships() as $relationship) {
+
+			/** @var BasePage $BasePage */
+			$BasePage = $this->resource->getContainer()->make($relationship['model']);
+
+			$name = str_replace('\\', '_', $relationship['model']);
+			$BasePage->fields()->add(HideInput::create($name)->value($name));
+
+			$obItem = $this->getElement($BasePage, [
+				$relationship['this'] => $primaryData[$relationship['this']],
+			]);
+
+			$data = $obItem->fetch();
+			$this->setFieldValues($data, $BasePage);
+
+			$data['type'] = $relationship['model'];
+
+			$includes[] = $BasePage;
+		}
+
+		return $includes;
 	}
 }

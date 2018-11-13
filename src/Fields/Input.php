@@ -12,8 +12,13 @@ class Input extends BaseField
 {
 	protected $type = 'text';
 
-	public function render()
+	public function render($tpl = '', $params = [])
 	{
-		return parent::render('fields/input');
+		$tpl = strlen($tpl) > 0 ? $tpl : 'fields/input';
+		$params['type'] = $params['type'] ?: 'text';
+
+		return parent::render($tpl, $params);
 	}
+
+
 }

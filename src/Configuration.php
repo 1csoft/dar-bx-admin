@@ -9,6 +9,7 @@ namespace Dar\Admin;
 
 
 use Bitrix\Main\Application;
+use Dar\Admin\Exceptions\NotFoundResource;
 use Dar\Admin\SystemPages;
 
 class Configuration
@@ -19,10 +20,10 @@ class Configuration
 	 * @method getFile - get param file
 	 * @return array
 	 */
-	public static function getFile(): array
+	public static function getFile()
 	{
 		if(file_exists(self::$file)){
-			return require_once(self::$file);
+			return include(self::$file);
 		}
 		return [];
 	}
@@ -50,8 +51,24 @@ class Configuration
 		$configData = static::getFile();
 		$configData['entities']['iblock.elements'] = SystemPages\IblockElementPage::class;
 		$configData['entities']['user.search'] = SystemPages\UserSearchPage::class;
-
+		$configData['entities']['order.search'] = SystemPages\OrderPage::class;
 
 		return $configData;
+	}
+
+	/**
+	 * @method findResource
+	 * @param $alias
+	 *
+	 * @return string|array
+	 */
+	public static function findResource($alias)
+	{
+		$configData = self::readFile();
+		if($configData['entities'][$alias]){
+			return $configData['entities'][$alias];
+		} else {
+			throw new NotFoundResource('resource '.$alias. ' not found in main admin configuration');
+		}
 	}
 }

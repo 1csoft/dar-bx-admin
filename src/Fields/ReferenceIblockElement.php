@@ -47,9 +47,19 @@ class ReferenceIblockElement extends BaseField
 		return parent::render($tpl, ['element' => $element]);
 	}
 
-	public function renderList($tpl = false, $params = [])
+	public function renderList($tpl = '', $params = [])
 	{
-		parent::renderList($tpl, $params);
+		$tpl = strlen($tpl) > 0 ? $tpl : 'fields/iblockElement.reference';
+		$params['element'] = $this->getElementById($params['value']);
+		$params['urlEdit'] = $this->getUrlEdit();
+		$params['display_name'] = sprintf($this->displayFormat, $params['urlEdit'], $params['element'][$this->displayName]);
+		$params['display_name'] = sprintf(
+			'<a href="%s" target="_blank">[%d] %s</a>',
+			$params['urlEdit'], $params['element']['ID'], $params['element'][$this->displayName]
+		);
+//		dump($params);
+
+		return parent::renderList($tpl, $params);
 	}
 
 	/**
@@ -81,7 +91,7 @@ class ReferenceIblockElement extends BaseField
 	 */
 	public function getElementById($id)
 	{
-		if (is_null($this->element)){
+//		if (is_null($this->element)){
 			if (is_null($this->iblockId)){
 				$this->iblockId = (int)\CIBlockElement::GetIBlockByID($id);
 			}
@@ -90,7 +100,7 @@ class ReferenceIblockElement extends BaseField
 				'select' => ['ID', 'NAME', 'CODE', 'XML_ID', 'IBLOCK_ID', 'IBLOCK_TYPE' => 'IBLOCK.IBLOCK_TYPE_ID'],
 				'filter' => ['IBLOCK_ID' => $this->iblockId, '=ID' => $id],
 			]);
-		}
+//		}
 
 		return $this->element;
 	}

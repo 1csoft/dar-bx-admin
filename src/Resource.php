@@ -103,6 +103,7 @@ class Resource
 		AdminProvider::register()->setResourceName($name);
 
 		$this->container->bind($name, function ($container) use ($class, $name){
+
 			/** @var BasePage $instance */
 			$instance = new $class($container);
 //			$name = str_replace('.', '_', $name);
@@ -147,5 +148,28 @@ class Resource
 	public static function addResourceStorage($name, $resource)
 	{
 		static::$resourceCollection[$name] = $resource;
+	}
+
+	/**
+	 * @method getResourceByModel
+	 * @param $modelClass
+	 *
+	 * @return BasePage
+	 * @throws Exceptions\DarAdminException
+	 */
+	public static function getResourceByModel($modelClass)
+	{
+		if(!class_exists($modelClass)){
+			throw new Exceptions\DarAdminException('class not found');
+		}
+		if(!$modelClass instanceof DataManager){
+			throw new Exceptions\DarAdminException('class not instance of \Bitrix\Main\DataManager');
+		}
+
+		$basePage = new BasePage();
+		$basePage::$model = $modelClass;
+		$basePage->fields();
+
+		return $basePage;
 	}
 }

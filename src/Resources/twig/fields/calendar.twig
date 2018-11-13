@@ -1,4 +1,8 @@
 {% extends 'form.row.twig' %}
 {% block field %}
-    <input size="47" type="text" name="{{ name }}" class="{{ styleClass }} calendar_once" value="{{ value }}" />
+    {% if item.isDisabled() %}
+        {{ value }}
+    {% else %}
+        <input size="47" type="text" name="{{ name }}" class="{{ styleClass }} calendar_once" value="{{ value }}" />
+    {% endif %}
 {% endblock %}

@@ -25,6 +25,8 @@ class Tabs
 	/** @var BaseField[] */
 	protected $fields;
 
+	protected $relationship;
+
 	public static function create(string $id)
 	{
 		$tab = new static();
@@ -173,6 +175,28 @@ class Tabs
 	public function getFields()
 	{
 		return $this->fields;
+	}
+
+	/**
+	 * @method getRelationship - get param relationship
+	 * @return mixed
+	 */
+	public function getRelationship()
+	{
+		return $this->relationship;
+	}
+
+	/**
+	 * @method setRelationship - set param Relationship
+	 * @param mixed $relationship
+	 *
+	 * @return $this
+	 */
+	public function setRelationship($relationship)
+	{
+		$this->relationship = $relationship;
+
+		return $this;
 	}
 
 }

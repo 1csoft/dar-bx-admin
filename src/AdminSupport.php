@@ -36,10 +36,11 @@ class AdminSupport
 	/**
 	 * @method convertToAdminField
 	 * @param ScalarField $field
+	 * @param string $prefix
 	 *
 	 * @return Fields\BaseField
 	 */
-	public static function convertToAdminField($field)
+	public static function convertToAdminField($field, $prefix = '')
 	{
 
 		$classBX = get_class($field);
@@ -47,7 +48,12 @@ class AdminSupport
 		$adminClass = self::$fieldType[$classBX];
 
 		if ($adminClass){
-			$adminField = $adminClass::create($field->getName())
+			if(strlen($prefix) > 0){
+				$name = $prefix.'['.$field->getName().']';
+			} else {
+				$name = $field->getName();
+			}
+			$adminField = $adminClass::create($name)
 				->required($field->isRequired())
 				->label($field->getTitle())
 				->filterable();
@@ -85,17 +91,18 @@ class AdminSupport
 	/**
 	 * @method convertFields
 	 * @param Entity\Base $entity
+	 * @param string $prefix
 	 *
 	 * @return Fields\BaseField[]|Fields\Primary[]
 	 */
-	public static function convertFields(Entity\Base $entity)
+	public static function convertFields(Entity\Base $entity, $prefix = '')
 	{
 		$primaryList = $entity->getPrimaryArray();
 		$items = [];
 		foreach ($entity->getFields() as $field) {
 			if (!in_array($field->getName(), $primaryList)){
 				if ($field instanceof Entity\ScalarField){
-					$adminField = static::convertToAdminField($field);
+					$adminField = static::convertToAdminField($field, $prefix);
 					if ($adminField){
 						$items[] = $adminField;
 					}

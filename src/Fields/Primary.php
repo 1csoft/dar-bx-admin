@@ -15,8 +15,9 @@ class Primary extends BaseField
 	{
 		$val = AdminContainer::getRequest()->get($this->getName());
 
-		if(!empty($val))
+		if(!empty($val) && empty($this->value))
 			$this->value($val);
+
 
 		return parent::render('fields/primary');
 	}

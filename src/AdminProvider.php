@@ -102,15 +102,29 @@ class AdminProvider
 		$this->resource->setUrl($this->url);
 
 		foreach ($this->resource->getModules() as $module) {
-			if(!Loader::includeModule($module))
+			if (!Loader::includeModule($module))
 				throw new NotModule('Модуль %s не установлен', $module);
 		}
+
+		if(count($this->resource->getRelationships()) > 0){
+			foreach ($this->resource->getRelationships() as $relationship) {
+				if(!$this->container->has($relationship['model'])){
+					$this->container->singleton($relationship['model'], function ($app) use ($relationship){
+						$item =  new $relationship['model']();
+						$item->fields();
+						return $item;
+					});
+				}
+			}
+		}
+
 
 		switch ($type) {
 			case self::TYPE_PAGE_EDIT:
 				$this->container->bind(IBuilder::class, function () {
 					$builder = new EditBuilder($this->resource);
 					$builder->createAdminInstance($this->resourceName);
+
 					return $builder;
 				});
 				break;
@@ -131,6 +145,8 @@ class AdminProvider
 				});
 				break;
 		}
+
+
 
 		return $this;
 	}
@@ -225,8 +241,14 @@ class AdminProvider
 		$_resource = $this->request->get('_resource');
 		$items = collect(Configuration::readFile()['entities']);
 
-		if($items->count() > 0){
-			Resource::getInstance()->add($items->get($_resource), $_resource);
+		if ($items->count() > 0){
+			$item = $items->get($_resource);
+			if(is_array($item)){
+				Resource::getInstance()->add($item['entity'], $_resource, $item['modules']);
+			} else {
+				Resource::getInstance()->add($items->get($_resource), $_resource);
+			}
+
 		}
 
 		return $this;
